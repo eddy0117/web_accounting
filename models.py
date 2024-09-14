@@ -1,14 +1,11 @@
-
-from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
-
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///transactions.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///transactions.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
-
 
 
 # 初始化数据库
@@ -24,14 +21,14 @@ class Transaction(db.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'type': self.type,
-            'amount': self.amount,
-            'category': self.category,
-            'date': self.date
+            "id": self.id,
+            "type": self.type,
+            "amount": self.amount,
+            "category": self.category,
+            "date": self.date,
         }
-    
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     with app.app_context():
         db.create_all()
