@@ -1,6 +1,7 @@
 // MonthlyStatistics.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ip_address } from './global_const';
 
 function MonthlyStatistics() {
   const [monthlyExpenses, setMonthlyExpenses] = useState({});
@@ -11,7 +12,7 @@ function MonthlyStatistics() {
 
   const fetchMonthlyExpenses = async () => {
     try {
-      const response = await axios.get('http://192.168.2.102:5000/transactions');
+      const response = await axios.get(`http://${ip_address}:5000/transactions`);
       const transactions = response.data;
 
       // 统计每个月的支出

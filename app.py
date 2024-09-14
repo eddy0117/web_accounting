@@ -50,4 +50,4 @@ def add_transaction():
 
 
 if __name__ == "__main__":
-    app.run(host="192.168.2.102", debug=True)
+    app.run(host="localhost", debug=True)

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart, ArcElement, Tooltip, Legend, Plugin } from 'chart.js';
+import { ip_address } from './global_const';
 
 Chart.register(ArcElement, Tooltip, Legend);
 
@@ -49,7 +50,7 @@ function Home() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get('http://192.168.2.102:5000/transactions');
+      const response = await axios.get(`http://${ip_address}:5000/transactions`);
       setTransactions(response.data);
       const currentBalance = calculateBalance(response.data);
       setBalance(currentBalance);
@@ -82,7 +83,7 @@ function Home() {
     };
 
     try {
-      await axios.post('http://192.168.2.102:5000/transactions', newTransaction, {
+      await axios.post(`http://${ip_address}:5000/transactions`, newTransaction, {
         headers: { 'Content-Type': 'application/json' },
       });
       setTransactions([...transactions, newTransaction]);
