@@ -3,10 +3,10 @@ import axios from 'axios';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart, ArcElement, Tooltip, Legend, Plugin } from 'chart.js';
 import { ip_address } from './global_const';
+import { useGlobalState } from './GlobalStateContext';
 
 Chart.register(ArcElement, Tooltip, Legend);
 
-// 自定义插件，用于在饼图中心显示总支出金额
 // 自定义插件，用于在饼图中心显示总支出金额
 const CenterTextPlugin = {
   id: 'centerText',
@@ -36,28 +36,47 @@ Chart.register(CenterTextPlugin);
 
 function Home() {
   const initialBalance = 10000;
-  const [balance, setBalance] = useState(initialBalance);
-  const [transactions, setTransactions] = useState([]);
+  // const [balance, setBalance] = useState(initialBalance);
+  // const [transactions, setTransactions] = useState([]);
+
+  // 使用 globalState 讓所有react組件共享state
+  const {globalState: GState, updateGlobalState} = useGlobalState();
   // 為了區分表單中的 amount 其他地方的 amount 變數，這裡將 amount_ 作為表單中的 amount 變數
   const [amount_, setAmount] = useState('');
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showToast, setShowToast] = useState(false);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   fetchTransactions();
+  // }, []);
+
+  if (GState.transactions.length === 0 || GState.balance === -1) {
+    console.log('balance:', GState.balance);
     fetchTransactions();
-  }, []);
+    
+  }
+  
 
-  const fetchTransactions = async () => {
+  const updateTransactions = (newTransactions) => {
+    updateGlobalState((draft) => {draft.transactions = newTransactions;});
+  };
+  
+  async function fetchTransactions() {
     try {
       const response = await axios.get(`http://${ip_address}:5000/transactions`);
-      setTransactions(response.data);
+      // setTransactions(response.data);
+      updateGlobalState((draft) => {draft.transactions = response.data});
       const currentBalance = calculateBalance(response.data);
-      setBalance(currentBalance);
+      // setBalance(currentBalance);
+      updateGlobalState((draft) => {draft.balance = currentBalance});
     } catch (error) {
       console.error('Error fetching transactions:', error);
     }
   };
+
+  
 
   const calculateBalance = (data) => {
     return data.reduce((acc, transaction) => {
@@ -71,7 +90,8 @@ function Home() {
     e.preventDefault();
     const amountValue = parseFloat(amount_);
     if (isNaN(amountValue) || amountValue <= 0) {
-      alert('Please enter a valid amount');
+      // alert('Please enter a valid amount');
+      setShowToast(true);
       return;
     }
 
@@ -84,11 +104,13 @@ function Home() {
 
     try {
       await axios.post(`http://${ip_address}:5000/transactions`, newTransaction, {
-        headers: { 'Content-Type': 'application/json' },
+        // headers: { 'Content-Type': 'application/json' },
       });
-      setTransactions([...transactions, newTransaction]);
-      setBalance((prevBalance) =>
-        type === 'income' ? prevBalance + amountValue : prevBalance - amountValue     );
+      fetchTransactions(); // 新增一筆交易後重新獲得所有交易資料
+ 
+      // setTransactions([...transactions, newTransaction]);
+      // setBalance((prevBalance) =>
+      //   type === 'income' ? prevBalance + amountValue : prevBalance - amountValue     );
       setAmount('');
       setCategory('');
     } catch (error) {
@@ -100,7 +122,7 @@ function Home() {
 
   // 准备支出项目的饼图数据
   const prepareChartData = () => {
-    const expenseCategories = transactions
+    const expenseCategories = GState.transactions
       .filter((transaction) => transaction.type === 'expense') // 只包含支出项目
       .reduce((acc, transaction) => {
         const { category, amount } = transaction;
@@ -137,7 +159,7 @@ function Home() {
       <h1 className="text-center mb-4">Simple Accounting Tool</h1>
 
       <div className="text-center mb-3">
-        <h2>Current Balance: ${balance.toFixed(2)}</h2>
+        <h2>Current Balance: ${GState.balance.toFixed(2)}</h2>
       </div>
 
       {/* 圆饼图 */}
@@ -243,7 +265,7 @@ function Home() {
             </tr>
           </thead>
           <tbody>
-            {transactions.map((transaction, index) => (
+            {GState.transactions.map((transaction, index) => (
               <tr key={index}>
                 <td>{transaction.date}</td>
                 <td>{transaction.type === 'income' ? 'Income' : 'Expense'}</td>
@@ -260,6 +282,28 @@ function Home() {
             ))}
           </tbody>
         </table>
+      </div>
+
+
+      {/* Toast 组件 */}
+      <div
+        className={`toast position-fixed bottom-0 end-0 m-3 ${showToast ? 'show' : ''}`}
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        onAnimationEnd={() => setShowToast(false)} // 动画结束后隐藏 Toast
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Error</strong>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+            onClick={() => setShowToast(false)}
+          ></button>
+        </div>
+        <div className="toast-body">Please enter a valid amount!</div>
       </div>
     </div>
   );
