@@ -1,0 +1,36 @@
+.category-selector {
+    display: flex; 
+    /* 使用 Flexbox 讓按鈕橫向排列 */
+    flex-wrap: wrap; 
+    /* 當按鈕超過寬度時換行 */
+    gap: 3px;
+    justify-content: center;
+    /* 在容器內均勻分佈按鈕 */
+  }
+
+.category-button {
+    width: 60px;
+    height: 60px;
+    /* margin: 10px auto; */
+    padding: 10px;
+    font-size: 20px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+  
+.category-button span {
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.category-button.selected {
+    background-color: #007bff;
+    color: white;
+}
+  

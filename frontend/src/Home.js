@@ -52,16 +52,13 @@ function Home() {
   //   fetchTransactions();
   // }, []);
 
+  // 在網頁第一次載入時才獲取交易資料
   if (GState.transactions.length === 0 || GState.balance === -1) {
     console.log('balance:', GState.balance);
     fetchTransactions();
     
   }
   
-
-  const updateTransactions = (newTransactions) => {
-    updateGlobalState((draft) => {draft.transactions = newTransactions;});
-  };
   
   async function fetchTransactions() {
     try {
